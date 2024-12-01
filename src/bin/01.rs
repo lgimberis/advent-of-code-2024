@@ -31,6 +31,19 @@ fn part_one(content: &String) -> u32 {
     sum_of_differences
 }
 
+#[test]
+fn test_part_one() {
+    let test_data = "3   4
+4   3
+2   5
+1   3
+3   9
+3   3";
+
+    let result = part_one(&test_data.to_string());
+    assert_eq!(result, 11);
+}
+
 fn main() {
     let content = read_today_data_file("01".to_string());
     let sum_of_differences = part_one(&content);
