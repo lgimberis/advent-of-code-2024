@@ -5,7 +5,7 @@ use std::collections::HashMap;
 fn sort_input_arrays(content: &String) -> (Vec<u32>, Vec<u32>) {
     let mut first: Vec<u32> = Vec::new();
     let mut second: Vec<u32> = Vec::new();
-    let re = Regex::new(r"^(?P<left>\d+)\s+(?P<right>\d+)$").unwrap();
+    let re = Regex::new(r"^\s*(?P<left>\d+)\s+(?P<right>\d+)$").unwrap();
 
     let lines: Vec<&str> = content.split("\n").collect();
     for s in &lines {
@@ -27,7 +27,7 @@ fn sort_input_arrays(content: &String) -> (Vec<u32>, Vec<u32>) {
     (first, second)
 }
 
-fn part_one(content: &String) -> u32 {
+pub fn part_one(content: &String) -> u32 {
     let (first, second) = sort_input_arrays(content);
     let mut sum_of_differences: u32 = 0;
     for i in 0..first.len() {
@@ -37,20 +37,7 @@ fn part_one(content: &String) -> u32 {
     sum_of_differences
 }
 
-#[test]
-fn test_part_one() {
-    let test_data = "3   4
-4   3
-2   5
-1   3
-3   9
-3   3";
-
-    let result = part_one(&test_data.to_string());
-    assert_eq!(result, 11);
-}
-
-fn part_two(content: &String) -> u32 {
+pub fn part_two(content: &String) -> u32 {
     let (first, second) = sort_input_arrays(content);
 
     // Construct hash maps of both arrays
@@ -75,17 +62,35 @@ fn part_two(content: &String) -> u32 {
     similarity_score
 }
 
-#[test]
-fn test_part_two() {
-    let test_data = "3   4
-4   3
-2   5
-1   3
-3   9
-3   3";
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-    let result = part_two(&test_data.to_string());
-    assert_eq!(result, 31);
+    #[test]
+    fn test_part_one() {
+        let test_data = "3   4
+        4   3
+        2   5
+        1   3
+        3   9
+        3   3";
+
+        let result = part_one(&test_data.to_string());
+        assert_eq!(result, 11);
+    }
+
+    #[test]
+    fn test_part_two() {
+        let test_data = "3   4
+        4   3
+        2   5
+        1   3
+        3   9
+        3   3";
+
+        let result = part_two(&test_data.to_string());
+        assert_eq!(result, 31);
+    }
 }
 
 fn main() {
