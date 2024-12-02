@@ -45,8 +45,8 @@ pub fn part_one(reports: &Vec<Vec<u32>>) -> u32 {
 pub fn part_two(reports: &Vec<Vec<u32>>) -> u32 {
     let mut number_safe = 0;
     'outer: for report in reports {
-        if report.len() < 2 {
-            if report.len() == 1 {
+        if report.len() < 3 {
+            if report.len() > 0 {
                 number_safe += 1;
             }
             continue;
