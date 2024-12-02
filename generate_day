@@ -1,9 +1,5 @@
 #!/bin/bash
-for num in $(seq -f "%02g" 01 25)
-do
-    echo $num
-    touch tests/${num}_test.rs
-    touch src/$num.rs
-    touch problems/${num}_description.txt
-    touch problems/${num}_data.txt
-done
+num=$1
+touch src/bin/$num.rs
+touch problems/${num}_description.txt
+touch problems/${num}_data.txt
