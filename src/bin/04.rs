@@ -39,6 +39,42 @@ fn part_one(data: &String) -> u32 {
     matches
 }
 
+fn part_two(data: &String) -> u32 {
+    let width = data.find("\n").or(Some(data.len())).unwrap();
+    let width = data[0..width].trim().len();
+    let data = data.replace(" ", "");
+    let chars = data.as_bytes();
+    let mut matches: u32 = 0;
+
+    fn test_ahead(data: &[u8], i: usize, width: usize) -> u32 {
+        if data.len() <= i + width * 2 + 4 {
+            return 0;
+        }
+        let word = String::from_utf8(
+            [
+                data[i],
+                data[i + 2],
+                data[i + width + 2],
+                data[i + width * 2 + 2],
+                data[i + width * 2 + 4],
+            ]
+            .to_vec(),
+        )
+        .unwrap();
+        if word == "MSAMS" || word == "SSAMM" || word == "MMASS" || word == "SMASM" {
+            return 1;
+        }
+        0
+    }
+
+    for (i, &letter) in chars.iter().enumerate() {
+        if letter == b'S' || letter == b'M' {
+            matches += test_ahead(chars, i, width);
+        }
+    }
+    matches
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -83,9 +119,28 @@ mod tests {
         let result = part_one(&data.to_string());
         assert_eq!(result, 2);
     }
+
+    #[test]
+    fn test_part_two_given() {
+        let data = "MMMSXXMASM
+        MSAMXMSMSA
+        AMXSXMAAMM
+        MSAMASMSMX
+        XMASAMXAMM
+        XXAMMXXAMA
+        SMSMSASXSS
+        SAXAMASAAA
+        MAMMMXMMMM
+        MXMXAXMASX";
+
+        let result = part_two(&data.to_string());
+        assert_eq!(result, 9);
+    }
 }
 fn main() {
     let file = read_today_data_file(String::from("04"));
     let part_one_result = part_one(&file);
     println!("Part one result: {part_one_result}");
+    let part_two_result = part_two(&file);
+    println!("Part two result: {part_two_result}");
 }
