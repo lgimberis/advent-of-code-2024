@@ -86,7 +86,6 @@ fn part_two(file: &String) -> i32 {
 
     let mut median_of_invalid_updates = 0;
     for mut update in updates {
-        println!("Processing update {:?}", &update);
         if !is_update_valid(&update, &ruleset) {
             'fix: for _it in 1..999999 {
                 for (i, x) in update.iter().enumerate() {
@@ -96,7 +95,7 @@ fn part_two(file: &String) -> i32 {
                         for j in i + 1..update.len() {
                             if rule.contains(&update[j]) {
                                 let el = update.remove(j);
-                                update.insert(0, el);
+                                update.insert(j - 1, el);
                                 continue 'fix;
                             }
                         }
