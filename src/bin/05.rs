@@ -80,6 +80,38 @@ fn part_one(file: &String) -> i32 {
     median_of_valid_updates
 }
 
+fn part_two(file: &String) -> i32 {
+    let (rules, updates) = parse_input(file);
+    let ruleset = build_ordering_ruleset(&rules);
+
+    let mut median_of_invalid_updates = 0;
+    for mut update in updates {
+        println!("Processing update {:?}", &update);
+        if !is_update_valid(&update, &ruleset) {
+            'fix: for _it in 1..999999 {
+                for (i, x) in update.iter().enumerate() {
+                    // Find the next element that has components out of place
+                    if ruleset.contains_key(x) {
+                        let rule = ruleset.get(x).unwrap();
+                        for j in i + 1..update.len() {
+                            if rule.contains(&update[j]) {
+                                let el = update.remove(j);
+                                update.insert(0, el);
+                                continue 'fix;
+                            }
+                        }
+                    }
+                }
+                break 'fix;
+            }
+            let median_index = update.len() / 2;
+            median_of_invalid_updates += update[median_index];
+        }
+    }
+
+    median_of_invalid_updates
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -117,10 +149,46 @@ mod tests {
         let result = part_one(&file.to_string());
         assert_eq!(result, 143);
     }
+
+    #[test]
+    fn test_part_two_given() {
+        let file = "47|53
+97|13
+97|61
+97|47
+75|29
+61|13
+75|53
+29|13
+97|29
+53|29
+61|53
+97|53
+61|29
+47|13
+75|47
+97|75
+47|61
+75|61
+47|29
+75|13
+53|13
+
+75,47,61,53,29
+97,61,53,29,13
+75,29,13
+75,97,47,61,53
+61,13,29
+97,13,75,29,47";
+        let result = part_two(&file.to_string());
+        assert_eq!(result, 123);
+    }
 }
 
 fn main() {
     let file = read_today_data_file(String::from("05"));
     let part_one_result = part_one(&file);
     println!("Part one result: {part_one_result}");
+    let part_two_result = part_two(&file);
+    println!("Part two result: {part_two_result}");
 }
