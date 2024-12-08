@@ -1,5 +1,49 @@
 #!/bin/bash
 num=$1
-touch src/bin/$num.rs
-touch problems/${num}_description.txt
-touch problems/${num}_data.txt
+[ ! -f problems/${num}_data.txt ] && touch problems/${num}_data.txt
+[ ! -f problems/${num}_description.txt ] && touch problems/${num}_description.txt
+if [ ! -f src/bin/$num.rs ]; then
+    touch src/bin/$num.rs
+    echo "use advent_of_code_2024::read_today_data_file;
+
+fn parse_input(file: &String) -> &String {
+    file
+}
+
+fn part_one(file: &String) -> i64 {
+    let parsed_input = parse_input(file);
+    0
+}
+
+fn part_two(file: &String) -> i64 {
+    let parsed_input = parse_input(file);
+    0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const EXAMPLE_DATA = \"\";
+
+    #[test]
+    fn test_part_one_as_given() {
+        let result = part_one(&String::from(EXAMPLE_DATA));
+        assert_eq!(result, -1);
+    }
+
+    #[test]
+    fn test_part_two_as_given() {
+        let result = part_two(&String::from(EXAMPLE_DATA));
+        assert_eq!(result, -1);
+    }
+}
+
+fn main() {
+    let file = read_today_data_file(String::from(\"$num\"));
+    let part_one_result = part_one(&file);
+    println!(\"Part one result: {part_one_result}\");
+    let part_two_result = part_two(&file);
+    println!(\"Part two result: {part_two_result}\");
+}" >> src/bin/${num}.rs
+fi
