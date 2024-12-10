@@ -12,6 +12,27 @@ fn parse_input(file: &String) -> Vec<Vec<u32>> {
         .collect()
 }
 
+fn find_trailheads_nonunique(map: &Vec<Vec<u32>>, x: usize, y: usize) -> usize {
+    let v = map[y][x];
+    if v == 9 {
+        return 1;
+    }
+    let mut from_adjacents = 0;
+    if x > 0 && map[y][x - 1] == v + 1 {
+        from_adjacents += find_trailheads_nonunique(map, x - 1, y);
+    }
+    if x < map[0].len() - 1 && map[y][x + 1] == v + 1 {
+        from_adjacents += find_trailheads_nonunique(map, x + 1, y);
+    }
+    if y > 0 && map[y - 1][x] == v + 1 {
+        from_adjacents += find_trailheads_nonunique(map, x, y - 1);
+    }
+    if y < map.len() - 1 && map[y + 1][x] == v + 1 {
+        from_adjacents += find_trailheads_nonunique(map, x, y + 1);
+    }
+    from_adjacents
+}
+
 fn find_trailheads(map: &Vec<Vec<u32>>, x: usize, y: usize) -> HashSet<(usize, usize)> {
     let v = map[y][x];
     if v == 9 {
@@ -49,8 +70,18 @@ fn part_one(file: &String) -> i64 {
 }
 
 fn part_two(file: &String) -> i64 {
-    let parsed_input = parse_input(file);
-    0
+    let digit_map = parse_input(file);
+
+    let mut sum_score = 0;
+    // Start with naive "dumb" implementation
+    for (y, row) in digit_map.iter().enumerate() {
+        for (x, &d) in row.iter().enumerate() {
+            if d == 0 {
+                sum_score += find_trailheads_nonunique(&digit_map, x, y);
+            }
+        }
+    }
+    sum_score as i64
 }
 
 #[cfg(test)]
@@ -81,7 +112,7 @@ mod tests {
     #[test]
     fn test_part_two_as_given() {
         let result = part_two(&String::from(EXAMPLE_DATA));
-        assert_eq!(result, -1);
+        assert_eq!(result, 81);
     }
 }
 
