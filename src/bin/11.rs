@@ -9,7 +9,7 @@ fn parse_input(file: &String) -> Vec<u64> {
         .collect()
 }
 
-fn part_one(file: &String, blinks: u64) -> i64 {
+fn blink_at_stones(file: &String, blinks: u64) -> i64 {
     let mut parsed_input = parse_input(file);
     for _i in 0..blinks {
         // We don't actually seem to care about stone order in this one
@@ -43,11 +43,6 @@ fn part_one(file: &String, blinks: u64) -> i64 {
     parsed_input.len() as i64
 }
 
-fn part_two(file: &String) -> i64 {
-    let parsed_input = parse_input(file);
-    0
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -56,33 +51,27 @@ mod tests {
 
     #[test]
     fn test_part_one_one_blink() {
-        let result = part_one(&String::from(EXAMPLE_DATA), 1);
+        let result = blink_at_stones(&String::from(EXAMPLE_DATA), 1);
         assert_eq!(result, 3);
     }
 
     #[test]
     fn test_part_one_six_blinks() {
-        let result = part_one(&String::from(EXAMPLE_DATA), 6);
+        let result = blink_at_stones(&String::from(EXAMPLE_DATA), 6);
         assert_eq!(result, 22);
     }
 
     #[test]
     fn test_part_one_as_given() {
-        let result = part_one(&String::from(EXAMPLE_DATA), 25);
+        let result = blink_at_stones(&String::from(EXAMPLE_DATA), 25);
         assert_eq!(result, 55312);
-    }
-
-    #[test]
-    fn test_part_two_as_given() {
-        let result = part_two(&String::from(EXAMPLE_DATA));
-        assert_eq!(result, -1);
     }
 }
 
 fn main() {
     let file = read_today_data_file(String::from("11"));
-    let part_one_result = part_one(&file, 25);
+    let part_one_result = blink_at_stones(&file, 25);
     println!("Part one result: {part_one_result}");
-    let part_two_result = part_two(&file);
+    let part_two_result = blink_at_stones(&file, 75);
     println!("Part two result: {part_two_result}");
 }
