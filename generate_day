@@ -10,12 +10,12 @@ fn parse_input(file: &String) -> &String {
     file
 }
 
-fn part_one(file: &String) -> i64 {
+fn part_one(file: &String) -> u64 {
     let parsed_input = parse_input(file);
     0
 }
 
-fn part_two(file: &String) -> i64 {
+fn part_two(file: &String) -> u64 {
     let parsed_input = parse_input(file);
     0
 }
@@ -24,18 +24,18 @@ fn part_two(file: &String) -> i64 {
 mod tests {
     use super::*;
 
-    const EXAMPLE_DATA = \"\";
+    const EXAMPLE_DATA: &str = \"\";
 
     #[test]
     fn test_part_one_as_given() {
         let result = part_one(&String::from(EXAMPLE_DATA));
-        assert_eq!(result, -1);
+        assert_eq!(result, u64::MAX);
     }
 
     #[test]
     fn test_part_two_as_given() {
         let result = part_two(&String::from(EXAMPLE_DATA));
-        assert_eq!(result, -1);
+        assert_eq!(result, u64::MAX);
     }
 }
 
