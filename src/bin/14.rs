@@ -24,8 +24,8 @@ fn part_one(width: i32, height: i32, file: &String, seconds: i32) -> u64 {
     let robots = parse_input(file);
     let mut quadrants = vec![vec!(0u64; 2); 2];
     for robot in robots {
-        let final_x = ((robot.0 as i32 + seconds * robot.2) % width + width) % width;
-        let final_y = ((robot.1 as i32 + seconds * robot.3) % height + height) % height;
+        let final_x = (robot.0 as i32 + seconds * robot.2).rem_euclid(width);
+        let final_y = (robot.1 as i32 + seconds * robot.3).rem_euclid(height);
         if final_x == width / 2 || final_y == height / 2 {
             continue;
         }
@@ -49,8 +49,8 @@ fn part_two(width: i32, height: i32, file: &String) -> () {
         let mut centre_robots = 0;
         for robot in &mut robots {
             // Critical assumption: quadrants are symmetric in x IFF the tree is displayed
-            robot.0 = (robot.0 + robot.2 + width) % width;
-            robot.1 = (robot.1 + robot.3 + height) % height;
+            robot.0 = (robot.0 + robot.2).rem_euclid(width);
+            robot.1 = (robot.1 + robot.3).rem_euclid(height);
             if (robot.0 > (width / 2 - width / 16) && robot.0 < (width / 2 + width / 16))
                 && robot.1 > height / 2 - height / 16
                 && robot.1 > height / 2 + height / 16
