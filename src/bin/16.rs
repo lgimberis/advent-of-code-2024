@@ -27,13 +27,15 @@ fn find_start_and_end(grid: &Vec<Vec<char>>) -> ((usize, usize), (usize, usize))
 
 const DIRECTIONS: [(i32, i32); 4] = [(1, 0), (0, 1), (-1, 0), (0, -1)];
 
-fn part_one(file: &String) -> i64 {
-    let grid = parse_input(file);
+fn score_cost_turning(d: usize, other: usize) -> i32 {
+    1000 * std::cmp::min(other.abs_diff(4 - d), other.abs_diff(d)) as i32
+}
+
+fn generate_map(grid: Vec<Vec<char>>) -> HashMap<(i32, i32), Vec<(usize, i32)>> {
     let width = grid[0].len() as i32;
     let height = grid.len() as i32;
-    let (start, end) = find_start_and_end(&grid);
+    let (start, _end) = find_start_and_end(&grid);
     let mut unmapped_points = VecDeque::new();
-    let mut mapped_points = HashSet::new();
     unmapped_points.push_back(((start.0 as i32, start.1 as i32), 0, 0));
     let mut map = HashMap::new();
     let mut it = 0;
@@ -41,40 +43,85 @@ fn part_one(file: &String) -> i64 {
         it += 1;
 
         let ((x, y), d, score) = unmapped_points.pop_front().unwrap();
-        mapped_points.insert((x, y));
 
         for (i, (dx, dy)) in DIRECTIONS.iter().enumerate() {
-            let added_score = 1 + 1000 * std::cmp::min(i.abs_diff(4 - d), i.abs_diff(d));
             if x + dx >= 0
                 && x + dx < width
                 && y + dy >= 0
                 && y + dy < height
                 && grid[(y + dy) as usize][(x + dx) as usize] != '#'
-                && (!map.contains_key(&(x + dx, y + dy, i))
-                    || *map.get(&(x + dx, y + dy, i)).unwrap() > score + added_score)
             {
-                map.insert((x + dx, y + dy, i), score + added_score);
-                unmapped_points.push_back(((x + dx, y + dy), i, score + added_score));
+                let v = map.get(&(x + dx, y + dy));
+                let new_score = score + 1 + score_cost_turning(i, d);
+                let mut new_v = vec![(i, new_score)];
+                if v.is_some() {
+                    let o: &Vec<(usize, i32)> = v.unwrap();
+                    if o.iter().any(|&(_d, s)| {
+                        s + score_cost_turning(d, _d) < new_score || (d == _d && s <= new_score)
+                    }) {
+                        continue;
+                    }
+                    let o2 = o
+                        .iter()
+                        .filter(|&(_d, s)| *s <= new_score + score_cost_turning(*_d, d))
+                        .map(|&s| s)
+                        .collect::<Vec<(usize, i32)>>();
+                    new_v.extend(o2);
+                }
+                map.insert((x + dx, y + dy), new_v);
+                unmapped_points.push_back(((x + dx, y + dy), i, new_score));
             }
         }
     }
-    if (it == 999_999) {
+    if it == 999_999 {
         println!("Overflowed");
     }
+    map
+}
+
+fn part_one(file: &String) -> i64 {
+    let grid = parse_input(file);
+    let (_start, end) = find_start_and_end(&grid);
+    let map = generate_map(grid);
     let mut min_end_score = i64::MAX;
-    for d in 0..DIRECTIONS.len() {
-        let v = map.get(&(end.0 as i32, end.1 as i32, d));
-        match v {
-            Some(x) => min_end_score = std::cmp::min(min_end_score, *x as i64),
-            None => (),
-        }
+    let v = map.get(&(end.0 as i32, end.1 as i32));
+    for (_d, score) in v.unwrap() {
+        min_end_score = std::cmp::min(*score as i64, min_end_score);
     }
     min_end_score
 }
 
 fn part_two(file: &String) -> i64 {
-    let parsed_input = parse_input(file);
-    0
+    let grid = parse_input(file);
+    let (_start, end) = find_start_and_end(&grid);
+    let map = generate_map(grid);
+
+    let mut best_path_points = HashSet::new();
+    let mut path_points = VecDeque::new();
+    let score = map
+        .get(&(end.0 as i32, end.1 as i32))
+        .unwrap()
+        .iter()
+        .fold(i32::MAX, |acc, el| std::cmp::min(el.1, acc));
+    path_points.push_back(((end.0 as i32, end.1 as i32), score));
+    while path_points.len() > 0 {
+        let (point, score) = path_points.pop_front().unwrap();
+        best_path_points.insert(point);
+        match map.get(&point) {
+            None => (),
+            Some(v) => {
+                for (d, s) in v {
+                    if *s <= score {
+                        path_points.push_back((
+                            (point.0 - DIRECTIONS[*d].0, point.1 - DIRECTIONS[*d].1),
+                            *s,
+                        ));
+                    }
+                }
+            }
+        }
+    }
+    best_path_points.len() as i64
 }
 
 #[cfg(test)]
@@ -130,7 +177,13 @@ mod tests {
     #[test]
     fn test_part_two_as_given() {
         let result = part_two(&String::from(EXAMPLE_DATA));
-        assert_eq!(result, -1);
+        assert_eq!(result, 45);
+    }
+
+    #[test]
+    fn test_part_two_second_example() {
+        let result = part_two(&String::from(SECOND_EXAMPLE));
+        assert_eq!(result, 64);
     }
 }
 
