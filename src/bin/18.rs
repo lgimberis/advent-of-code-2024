@@ -66,9 +66,20 @@ fn part_one(file: &String, width: usize, bytes_fallen: usize) -> u64 {
     path.len() as u64 - 1
 }
 
-fn part_two(file: &String) -> u64 {
-    let parsed_input = parse_input(file);
-    0
+fn part_two(file: &String, width: usize, bytes_fallen: usize) -> String {
+    let falling_bytes = parse_input(file);
+    let mut grid = fill_grid(&falling_bytes[..bytes_fallen], width);
+    let mut path = find_shortest_path(&grid);
+    for &(x, y) in &falling_bytes[bytes_fallen..] {
+        grid[y][x] = true;
+        if path.contains(&(x, y)) {
+            path = find_shortest_path(&grid);
+            if path.len() == 0 {
+                return format!("{x},{y}");
+            }
+        }
+    }
+    panic!("Couldn't find a byte that blocks the path!");
 }
 
 #[cfg(test)]
@@ -109,8 +120,8 @@ mod tests {
 
     #[test]
     fn test_part_two_as_given() {
-        let result = part_two(&String::from(EXAMPLE_DATA));
-        assert_eq!(result, u64::MAX);
+        let result = part_two(&String::from(EXAMPLE_DATA), 7, 12);
+        assert_eq!(result, "6,1");
     }
 }
 
@@ -118,6 +129,6 @@ fn main() {
     let file = read_today_data_file(String::from("18"));
     let part_one_result = part_one(&file, 71, 1024);
     println!("Part one result: {part_one_result}");
-    let part_two_result = part_two(&file);
+    let part_two_result = part_two(&file, 71, 1024);
     println!("Part two result: {part_two_result}");
 }
