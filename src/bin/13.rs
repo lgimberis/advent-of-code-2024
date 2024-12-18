@@ -1,15 +1,15 @@
 use advent_of_code_2024::read_today_data_file;
 use regex::CaptureMatches;
 use regex::Regex;
-fn parse_input(file: &String) -> Vec<Vec<(u32, u32)>> {
+fn parse_input(file: &String, offset: u64) -> Vec<Vec<(u64, u64)>> {
     let lines: Vec<&str> = file.split("\n").filter(|x| x.trim().len() > 0).collect();
     let mut machines = Vec::new();
     let re = Regex::new(r"\d+").unwrap();
 
-    fn process(captures: CaptureMatches) -> (u32, u32) {
+    fn process(captures: CaptureMatches) -> (u64, u64) {
         let vec = captures
-            .map(|x| x.extract::<0>().0.parse::<u32>().unwrap())
-            .collect::<Vec<u32>>();
+            .map(|x| x.extract::<0>().0.parse::<u64>().unwrap())
+            .collect::<Vec<u64>>();
         (vec[0], vec[1])
     }
 
@@ -20,56 +20,35 @@ fn parse_input(file: &String) -> Vec<Vec<(u32, u32)>> {
         let prize = process(re.captures_iter(lines[3 * machine_i + 2]));
         machines[machine_i].push(button_a);
         machines[machine_i].push(button_b);
-        machines[machine_i].push(prize);
+        machines[machine_i].push((prize.0 + offset, prize.1 + offset));
     }
     machines
 }
 
 fn integer_solutions(
-    target: (u32, u32),
-    cheap: (u32, u32),
-    expensive: (u32, u32),
-) -> Option<(u32, u32)> {
+    target: (u64, u64),
+    cheap: (u64, u64),
+    expensive: (u64, u64),
+) -> Option<(u64, u64)> {
     // Returns integer numbers to be multiplied by arguments cheap and expensive respectively to get
     // target, in both of their values
 
-    // Start by trying to set cheap to the highest possible value
-    let mut cheap_multiplier = std::cmp::min(target.0 / cheap.0, target.1 / cheap.1);
-    let mut expensive_multiplier = 0;
-
-    fn evaluate(
-        _cheap: (u32, u32),
-        _exp: (u32, u32),
-        cheap_mult: u32,
-        exp_mult: u32,
-    ) -> (u32, u32) {
-        (
-            cheap_mult * _cheap.0 + exp_mult * _exp.0,
-            cheap_mult * _cheap.1 + exp_mult * _exp.1,
-        )
+    let target = (target.0 as i64, target.1 as i64);
+    let cheap = (cheap.0 as i64, cheap.1 as i64);
+    let expensive = (expensive.0 as i64, expensive.1 as i64);
+    let n_expensive =
+        (target.1 * cheap.0 - target.0 * cheap.1) / (cheap.0 * expensive.1 - cheap.1 * expensive.0);
+    let n_cheap = (target.0 - n_expensive * expensive.0) / cheap.0;
+    if n_cheap * cheap.0 + n_expensive * expensive.0 != target.0
+        || n_cheap * cheap.1 + n_expensive * expensive.1 != target.1
+    {
+        return None;
     }
-
-    let mut it = 0;
-    while it < 999_999 {
-        let current = evaluate(cheap, expensive, cheap_multiplier, expensive_multiplier);
-        if current.0 == target.0 && current.1 == target.1 {
-            return Some((cheap_multiplier, expensive_multiplier));
-        }
-        if cheap_multiplier == 0 && (current.0 > target.0 || current.1 > target.1) {
-            break;
-        }
-        if current.0 > target.0 || current.1 > target.1 {
-            cheap_multiplier -= 1;
-        } else {
-            expensive_multiplier += 1;
-        }
-        it += 1;
-    }
-    None
+    return Some((n_cheap as u64, n_expensive as u64));
 }
 
-fn part_one(file: &String) -> u32 {
-    let machines = parse_input(file);
+fn part_one(file: &String) -> u64 {
+    let machines = parse_input(file, 0);
 
     let mut winning_token_costs = 0;
     for machine in machines {
@@ -81,9 +60,17 @@ fn part_one(file: &String) -> u32 {
     winning_token_costs
 }
 
-fn part_two(file: &String) -> i64 {
-    let parsed_input = parse_input(file);
-    0
+fn part_two(file: &String) -> u64 {
+    let machines = parse_input(file, 10_000_000_000_000u64);
+
+    let mut winning_token_costs = 0;
+    for machine in machines {
+        let multipliers = integer_solutions(machine[2], machine[1], machine[0]);
+        if multipliers.is_some() {
+            winning_token_costs += multipliers.unwrap().0 + multipliers.unwrap().1 * 3;
+        }
+    }
+    winning_token_costs
 }
 
 #[cfg(test)]
@@ -115,7 +102,7 @@ Prize: X=18641, Y=10279";
     #[test]
     fn test_part_two_as_given() {
         let result = part_two(&String::from(EXAMPLE_DATA));
-        assert_eq!(result, -1);
+        assert_eq!(result, 1);
     }
 }
 
