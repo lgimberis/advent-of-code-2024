@@ -49,14 +49,19 @@ fn find_racetrack(grid: &Vec<Vec<char>>) -> Vec<(usize, usize)> {
     racetrack
 }
 
-fn find_cheats_of_at_least(n: usize, racetrack: &Vec<(usize, usize)>) -> u64 {
+fn find_cheats_of_at_least(
+    n: usize,
+    cheat_duration: usize,
+    racetrack: &Vec<(usize, usize)>,
+) -> u64 {
     // Returns the number of cheats that save `n` picoseconds or more
     let mut count = 0;
     for i in n..racetrack.len() {
         let cheat_end = racetrack[i];
-        for j in 0..(i - n) {
+        for j in 0..(i - 2) {
             let cheat_start = racetrack[j];
-            if cheat_end.0.abs_diff(cheat_start.0) + cheat_end.1.abs_diff(cheat_start.1) <= 2 {
+            let diff = cheat_end.0.abs_diff(cheat_start.0) + cheat_end.1.abs_diff(cheat_start.1);
+            if diff <= cheat_duration && i - j - diff >= n {
                 count += 1;
             }
         }
@@ -67,12 +72,13 @@ fn find_cheats_of_at_least(n: usize, racetrack: &Vec<(usize, usize)>) -> u64 {
 fn part_one(file: &String, n: usize) -> u64 {
     let grid = parse_input(file);
     let racetrack = find_racetrack(&grid);
-    find_cheats_of_at_least(n, &racetrack)
+    find_cheats_of_at_least(n, 2, &racetrack)
 }
 
-fn part_two(file: &String) -> u64 {
-    let parsed_input = parse_input(file);
-    0
+fn part_two(file: &String, n: usize) -> u64 {
+    let grid = parse_input(file);
+    let racetrack = find_racetrack(&grid);
+    find_cheats_of_at_least(n, 20, &racetrack)
 }
 
 #[cfg(test)]
@@ -103,8 +109,8 @@ mod tests {
 
     #[test]
     fn test_part_two_as_given() {
-        let result = part_two(&String::from(EXAMPLE_DATA));
-        assert_eq!(result, u64::MAX);
+        let result = part_two(&String::from(EXAMPLE_DATA), 76);
+        assert_eq!(result, 3);
     }
 }
 
@@ -112,6 +118,6 @@ fn main() {
     let file = read_today_data_file(String::from("20"));
     let part_one_result = part_one(&file, 100);
     println!("Part one result: {part_one_result}");
-    let part_two_result = part_two(&file);
+    let part_two_result = part_two(&file, 100);
     println!("Part two result: {part_two_result}");
 }
