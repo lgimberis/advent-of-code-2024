@@ -45,9 +45,31 @@ fn part_one(file: &String) -> u64 {
     combinations.len() as u64
 }
 
-fn part_two(file: &String) -> u64 {
-    let parsed_input = parse_input(file);
-    0
+fn part_two(file: &String) -> String {
+    let connection_map = parse_input(file);
+    let mut parties: Vec<HashSet<&str>> = Vec::new();
+    for (source, destinations) in &connection_map {
+        'find_membership: for party in parties.iter_mut() {
+            for computer in party.iter() {
+                if !destinations.contains(computer) {
+                    continue 'find_membership;
+                }
+            }
+            party.insert(source);
+        }
+        for destination in destinations {
+            parties.push(HashSet::from([*source, *destination]));
+        }
+    }
+    //println!("{:?}", parties);
+    let (_longest_length, longest_party) = parties.iter().fold((0, HashSet::new()), |acc, el| {
+        if el.len() > acc.0 {
+            (el.len(), el.clone())
+        } else {
+            acc
+        }
+    });
+    longest_party.iter().sorted().join(",")
 }
 
 #[cfg(test)]
@@ -96,7 +118,7 @@ td-yn";
     #[test]
     fn test_part_two_as_given() {
         let result = part_two(&String::from(EXAMPLE_DATA));
-        assert_eq!(result, u64::MAX);
+        assert_eq!(result, "co,de,ka,ta");
     }
 }
 
